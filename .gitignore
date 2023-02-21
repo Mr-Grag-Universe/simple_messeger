@@ -1,0 +1,7 @@
+# Project exclude paths
+/cmake-build-debug-mingw/
+/cmake-build-debug-mingw/CMakeFiles/
+/cmake-build-debug-visual-studio/
+/cmake-build-debug-visual-studio/CMakeFiles/
+/cmake-build-release-wsl/
+/cmake-build-release-wsl/CMakeFiles/
