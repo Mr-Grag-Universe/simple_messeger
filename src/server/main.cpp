@@ -10,7 +10,6 @@
 
 using server_ptr = std::shared_ptr<MyServer::ServerI>;
 using namespace boost::asio;
-typedef boost::shared_ptr<ip::tcp::socket> socket_ptr;
 
 int main(int argc, char** argv) {
     io_service service;
@@ -18,7 +17,9 @@ int main(int argc, char** argv) {
     ip::tcp::acceptor acc(service, ep);
 
     server_ptr server = std::make_shared<MyServer::Server>(service);
-    server->connectToDB({"0.0.0.0:32768", 5432});
+    server->connectToDB({"127.0.0.1", 5432});
+    std::cout << "=====" << std::endl;
+    return 0;
     while (true) {
         server->waitForConnection();
     }

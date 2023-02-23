@@ -66,19 +66,24 @@ namespace MyServer {
         ip::address _address;
         ip::tcp::endpoint _ep;
 
+        bool _connected = false;
+        size_t _session_id{};
+
         std::map<size_t, Session &> _sessions;
     public:
         Server(io_service & service) : _service(service) {}
         ~Server() {
+            std::cout << "server destructor" << std::endl;
             // "kill" all threads (sessions)
             for (auto & s : _sessions) {
                 s.second.th.detach();
             }
+            this->disconnect();
         }
 
         void waitForConnection() override;
         void sessionHandler() override;
-        void connectToDB(const ConnectionInfo &c_inf = {"", 0}) override;
+        void connectToDB(const ConnectionInfo &c_inf = {"127.0.0.1", 0}) override;
 
     private:
 
@@ -86,6 +91,7 @@ namespace MyServer {
 
         void connect();
         void disconnect();
+        void createSession();
 
         size_t request(const std::string & target);
         std::string getResponse();
