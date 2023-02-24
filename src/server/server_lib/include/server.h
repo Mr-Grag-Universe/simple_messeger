@@ -34,10 +34,20 @@ namespace MyServer {
      * 3) make requests to database
      */
     class ServerI {
+    protected:
+        ~ServerI() = default;
     public:
         virtual void waitForConnection() = 0;
         virtual void sessionHandler() = 0;
         virtual void connectToDB(const ConnectionInfo &c_inf = {"", 0}) = 0;
+
+        // ============= //
+        virtual void Delete() = 0;
+        virtual void Activate(bool activate) = 0;
+
+        static ServerI * CreateInstance(io_service & service);
+        ServerI & operator=(const ServerI &) = delete;
+        // ============= //
     };
 
     struct  Session {
@@ -78,55 +88,36 @@ namespace MyServer {
     struct DB_Deleter {
         void operator()(DataBaseI* p) const { p->Delete(); }
     };
+    struct Server_Deleter {
+        void operator()(ServerI* p) const { p->Delete(); }
+    };
 
     //============== pointers and templates =================//
 
     template <class I> // I — наследник IBase
-    using UniquePtr = std::unique_ptr<I, DB_Deleter>;
+    using UniquePtr_DB = std::unique_ptr<I, DB_Deleter>;
     template <class I> // I — имеет функцию-фабрику CreateInstance()
-    UniquePtr<I> CreateInstance() {
-        return UniquePtr<I>(I::CreateInstance());
+    UniquePtr_DB<I> CreateInstance() {
+        return UniquePtr_DB<I>(I::CreateInstance());
     }
     template <class I> // I — наследник IBase
-    UniquePtr<I> ToPtr(I* p) {
-        return UniquePtr<I>(p);
+    UniquePtr_DB<I> ToPtr(I* p) {
+        return UniquePtr_DB<I>(p);
+    }
+
+    template <class I> // I — наследник IBase
+    using UniquePtr_Server = std::unique_ptr<I, Server_Deleter>;
+    template <class I> // I — имеет функцию-фабрику CreateInstance()
+    UniquePtr_Server<I> CreateInstance(io_service & service) {
+        return UniquePtr_Server<I>(I::CreateInstance(service));
+    }
+    template <class I> // I — наследник IBase
+    UniquePtr_Server<I> ToPtr(I* p) {
+        return UniquePtr_Server<I>(p);
     }
 
     //=======================================================//
 
-    class Server : public ServerI {
-    private:
-        socket_ptr _sock;
-        io_service & _service;
-
-        size_t _port{};
-        ip::address _address;
-        ip::tcp::endpoint _ep;
-
-        bool _connected = false;
-        size_t _session_id{};
-
-        std::map<size_t, Session &> _sessions;
-        DB_Ptr _DB;
-    public:
-        Server(io_service & service) : _service(service) {}
-        ~Server() {
-            std::cout << "server destructor" << std::endl;
-            // "kill" all threads (sessions)
-            for (auto & s : _sessions) {
-                s.second.th.detach();
-            }
-            // delete DB?
-            // this->disconnect();
-        }
-
-        void waitForConnection() override;
-        void sessionHandler() override;
-        void connectToDB(const ConnectionInfo &c_inf = {"127.0.0.1", 0}) override;
-
-    private:
-
-    };
 };
 
 #endif //SIMPLE_MESSEGER_SERVER_I_H

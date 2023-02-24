@@ -114,6 +114,22 @@ string response_data;
 
 namespace MyServer {
 
+    // =============== //
+
+    void Server::Delete() {
+        delete this;
+    }
+
+    void Server::Activate(bool activate) {
+
+    }
+
+    ServerI * ServerI::CreateInstance(io_service & service) {
+        return static_cast<ServerI *>(new Server(service));
+    }
+
+    // =============== //
+
     void Server::waitForConnection() {
 //        socket_ptr sock(new ip::tcp::socket(service));
 //        acc.accept(*sock);
@@ -125,7 +141,7 @@ namespace MyServer {
     }
 
     void Server::connectToDB(const ConnectionInfo &c_inf) {
-        _DB = CreateInstance<DataBaseI>();
+        _DB = MyServer::CreateInstance<DataBaseI>();
         _DB->Activate(true);
     }
 };
