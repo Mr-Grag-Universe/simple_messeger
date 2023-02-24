@@ -5,7 +5,7 @@ set(CMAKE_PREFIX_PATH "C:\\Qt\\5.15.2\\mingw81_64\\")
 set(Qt5Widgets_DIR "C:\\Qt\\5.15.2\\mingw81_64\\bin\\")
 set(Qt5_DIR "C:\\Qt\\5.15.2\\mingw81_64\\lib\\cmake\\Qt5\\")
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 
 set(NAME MyServerLib)
 

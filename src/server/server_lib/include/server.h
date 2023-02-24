@@ -45,17 +45,54 @@ namespace MyServer {
         std::thread th;
     };
 
+    class DataBase;
     /**
      * class - interlayer between DB and Server
      */
+    class DataBaseI;
+    using DB_Ptr = std::shared_ptr<DataBaseI>;
     class DataBaseI {
-    private:
+    protected:
+        ~DataBaseI() = default;
+    public:
+        virtual void Delete() = 0;
+        virtual void Activate(bool activate) = 0;
+        
+        // static DataBaseI* CreateInstance(); // fabric-function
+        static DataBaseI * CreateInstance();
+        DataBaseI& operator=(const DataBaseI&) = delete;
+
+        // fabric function for this interface
+        // template<const size_t type>
+        // static std::shared_ptr<DataBaseI> Create() = 0;
+
+        //===============================//
+
         // change return type
         /// connect to DB
-        virtual void connectToDB(const ConnectionInfo &c_inf);
+        virtual void connectToDB(const ConnectionInfo &c_inf) = 0;
         /// make any request to connected DB
-        virtual void makeRequest(const std::string & request);
+        virtual void makeRequest(const std::string & request) = 0;
     };
+
+    struct DB_Deleter {
+        void operator()(DataBaseI* p) const { p->Delete(); }
+    };
+
+    //============== pointers and templates =================//
+
+    template <class I> // I — наследник IBase
+    using UniquePtr = std::unique_ptr<I, DB_Deleter>;
+    template <class I> // I — имеет функцию-фабрику CreateInstance()
+    UniquePtr<I> CreateInstance() {
+        return UniquePtr<I>(I::CreateInstance());
+    }
+    template <class I> // I — наследник IBase
+    UniquePtr<I> ToPtr(I* p) {
+        return UniquePtr<I>(p);
+    }
+
+    //=======================================================//
 
     class Server : public ServerI {
     private:
@@ -70,6 +107,7 @@ namespace MyServer {
         size_t _session_id{};
 
         std::map<size_t, Session &> _sessions;
+        DB_Ptr _DB;
     public:
         Server(io_service & service) : _service(service) {}
         ~Server() {
@@ -78,7 +116,8 @@ namespace MyServer {
             for (auto & s : _sessions) {
                 s.second.th.detach();
             }
-            this->disconnect();
+            // delete DB?
+            // this->disconnect();
         }
 
         void waitForConnection() override;
@@ -87,14 +126,6 @@ namespace MyServer {
 
     private:
 
-        void setEndpoint(const ip::tcp::endpoint & ep);
-
-        void connect();
-        void disconnect();
-        void createSession();
-
-        size_t request(const std::string & target);
-        std::string getResponse();
     };
 };
 

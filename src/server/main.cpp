@@ -19,7 +19,7 @@ int main(int argc, char** argv) {
     server_ptr server = std::make_shared<MyServer::Server>(service);
     server->connectToDB({"127.0.0.1", 5432});
     std::cout << "=====" << std::endl;
-    return 0;
+
     while (true) {
         server->waitForConnection();
     }

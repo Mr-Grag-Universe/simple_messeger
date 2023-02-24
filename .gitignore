@@ -5,3 +5,5 @@
 /cmake-build-debug-visual-studio/CMakeFiles/
 /cmake-build-release-wsl/
 /cmake-build-release-wsl/CMakeFiles/
+/.*
+/build
