@@ -2,10 +2,14 @@
 // Created by Stephan on 17.02.2023.
 //
 
+#include <chrono>
+
 #include "Server.h"
 #include "server.h"
 
+// #include <boost/bind.hpp>
 
+using namespace std::chrono_literals;
 using boost::asio::ip::tcp;
 using std::string;
 
@@ -121,7 +125,7 @@ namespace MyServer {
     }
 
     void Server::Activate(bool activate) {
-
+        _acc = std::make_shared<ip::tcp::acceptor>(_service, _ep);
     }
 
     ServerI * ServerI::CreateInstance(io_service & service) {
@@ -131,18 +135,38 @@ namespace MyServer {
     // =============== //
 
     void Server::waitForConnection() {
-//        socket_ptr sock(new ip::tcp::socket(service));
-//        acc.accept(*sock);
-//        boost::thread( boost::bind(client_session, sock));
+        // listening to a new connections
+        socket_ptr sock(new ip::tcp::socket(_service));
+        _acc->accept(*sock);
+
+        // create a new thread for new client session
+        thread_ptr th = std::make_shared<std::thread>( std::bind(sessionHandler, sock));
+        
+        // нужно придумать id
+        _sessions[_sessions.size()] = {_sessions.size(), th, sock};
     }
 
-    void Server::sessionHandler() {
-
+    void Server::sessionHandler(socket_ptr sock) {
+        while (true) {
+            std::this_thread::sleep_for(1s);
+            std::cout << "some work" << std::endl;
+        }
     }
 
-    void Server::connectToDB(const ConnectionInfo &c_inf) {
+    void Server::connectToDB() {
+        // if DB is already connected to server, throw exeption
+        if (_connected) {
+            throw std::runtime_error("DB is already connected");
+        }
+
         _DB = MyServer::CreateInstance<DataBaseI>();
         _DB->Activate(true);
+        _connected = true;
+    }
+
+    void Server::setUp(ip::tcp::endpoint ep, ip::tcp::endpoint DB_ep) {
+        _ep = ep;
+        _DB_ep = DB_ep;
     }
 };
 

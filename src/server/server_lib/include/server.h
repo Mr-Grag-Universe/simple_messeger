@@ -18,6 +18,10 @@ typedef std::shared_ptr<io_service> io_service_ptr;
 
 namespace MyServer {
 
+    class DataBase;
+    class DataBaseI;
+    using DB_Ptr = std::shared_ptr<DataBaseI>;
+
     /**
      * some information for creation a connection with a server
      */
@@ -25,6 +29,8 @@ namespace MyServer {
         std::string s_ip;
         size_t port = 2001;
     };
+
+    //============== interfaces =============//
 
     /**
      * my synchronous server class
@@ -37,30 +43,26 @@ namespace MyServer {
     protected:
         ~ServerI() = default;
     public:
-        virtual void waitForConnection() = 0;
-        virtual void sessionHandler() = 0;
-        virtual void connectToDB(const ConnectionInfo &c_inf = {"", 0}) = 0;
 
-        // ============= //
+        // ======= interface servise functions ====== //
+
         virtual void Delete() = 0;
         virtual void Activate(bool activate) = 0;
 
         static ServerI * CreateInstance(io_service & service);
         ServerI & operator=(const ServerI &) = delete;
+
         // ============= //
+
+        virtual void waitForConnection() = 0;
+        static void sessionHandler(socket_ptr sock);
+        virtual void connectToDB() = 0;
+        virtual void setUp(ip::tcp::endpoint ep, ip::tcp::endpoint DB_ep) = 0;
     };
 
-    struct  Session {
-        size_t id{};
-        std::thread th;
-    };
-
-    class DataBase;
     /**
      * class - interlayer between DB and Server
      */
-    class DataBaseI;
-    using DB_Ptr = std::shared_ptr<DataBaseI>;
     class DataBaseI {
     protected:
         ~DataBaseI() = default;
@@ -68,13 +70,8 @@ namespace MyServer {
         virtual void Delete() = 0;
         virtual void Activate(bool activate) = 0;
         
-        // static DataBaseI* CreateInstance(); // fabric-function
         static DataBaseI * CreateInstance();
         DataBaseI& operator=(const DataBaseI&) = delete;
-
-        // fabric function for this interface
-        // template<const size_t type>
-        // static std::shared_ptr<DataBaseI> Create() = 0;
 
         //===============================//
 
@@ -85,6 +82,8 @@ namespace MyServer {
         virtual void makeRequest(const std::string & request) = 0;
     };
 
+    //============== deleters =============//
+
     struct DB_Deleter {
         void operator()(DataBaseI* p) const { p->Delete(); }
     };
@@ -94,24 +93,24 @@ namespace MyServer {
 
     //============== pointers and templates =================//
 
-    template <class I> // I — наследник IBase
+    template <class I> // I — ServerI's heir
     using UniquePtr_DB = std::unique_ptr<I, DB_Deleter>;
-    template <class I> // I — имеет функцию-фабрику CreateInstance()
+    template <class I> // I — has a fabric-function CreateInstance()
     UniquePtr_DB<I> CreateInstance() {
         return UniquePtr_DB<I>(I::CreateInstance());
     }
-    template <class I> // I — наследник IBase
+    template <class I> // I — ServerI's heir
     UniquePtr_DB<I> ToPtr(I* p) {
         return UniquePtr_DB<I>(p);
     }
 
-    template <class I> // I — наследник IBase
+    template <class I> // I — ServerI's heir
     using UniquePtr_Server = std::unique_ptr<I, Server_Deleter>;
-    template <class I> // I — имеет функцию-фабрику CreateInstance()
+    template <class I> // I — has a fabric-function CreateInstance()
     UniquePtr_Server<I> CreateInstance(io_service & service) {
         return UniquePtr_Server<I>(I::CreateInstance(service));
     }
-    template <class I> // I — наследник IBase
+    template <class I> // I — ServerI's heir
     UniquePtr_Server<I> ToPtr(I* p) {
         return UniquePtr_Server<I>(p);
     }

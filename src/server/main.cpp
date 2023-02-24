@@ -13,13 +13,18 @@ using namespace boost::asio;
 
 int main(int argc, char** argv) {
     io_service service;
+    // addresses of server listaning port and it's DB
     ip::tcp::endpoint ep( ip::tcp::v4(), 2000);
+    ip::tcp::endpoint DB_ep( ip::address::from_string("127.0.0.1"), 5432);
+
     ip::tcp::acceptor acc(service, ep);
 
-    // server_ptr server = std::make_shared<MyServer::Server>(service);
+    // server' setting up
     auto server = server_ptr(MyServer::CreateInstance<MyServer::ServerI>(service));
+    server->setUp(ep, DB_ep);
     server->Activate(true);
-    server->connectToDB({"127.0.0.1", 5432});
+    server->connectToDB(); // {"127.0.0.1", 5432}
+
     std::cout << "=====" << std::endl;
 
     while (true) {

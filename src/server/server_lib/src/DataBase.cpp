@@ -45,11 +45,6 @@ namespace MyServer {
         // TODO
     }
 
-    template<const size_t type>
-    std::shared_ptr<DataBaseI> DataBase::Create() {
-        return std::dynamic_pointer_cast<DataBaseI>(std::make_shared<DataBase>(DataBase()));
-    }
-
     //===============================//
 
     void DataBase::setEndpoint(const ip::tcp::endpoint & ep) {

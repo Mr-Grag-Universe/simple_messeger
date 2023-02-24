@@ -29,19 +29,20 @@ namespace MyServer {
     public:
         DataBase() = default;
         ~DataBase() = default;
+
+        // ============ interface service ============= //
+
         void Delete() override;
         void Activate(bool activate) override;
 
         friend DataBaseI * DataBaseI::CreateInstance();
         
-        //=====================//
+        // =========== interface functions ========== //
 
         void connectToDB(const ConnectionInfo &c_inf) override;
         void makeRequest(const std::string & request) override;
 
-        template<const size_t type>
-        std::shared_ptr<DataBaseI> Create();
-    private:
+    protected:
         
         void setEndpoint(const ip::tcp::endpoint & ep);
 
