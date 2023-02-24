@@ -7,14 +7,34 @@
 
 #include <boost/asio.hpp>
 
-namespace MyClient {
-    using namespace boost::asio;
+using namespace boost::asio;
 
-    bool Client::connectToServer(const ConnectionInfo &c_inf) {
-        ip::tcp::endpoint ep( ip::address::from_string(c_inf.s_ip), c_inf.port);
-        this->setEndpoint(ep);
-        this->connect();
-        return false;
+namespace MyClient {
+
+    // ============== interface service ============ //
+    
+    void Client::Delete() {
+        delete this;
+    }
+    void Client::Activate(bool activate) {
+        // ip::tcp::socket sock(*_service);
+        // _sock = std::make_shared<ip::tcp::socket>(sock);
+    }
+
+    ClientI * ClientI::CreateInstance(io_service_ptr service) {
+        return static_cast<ClientI *>(new Client(service));
+    }
+
+    // ============================== //
+
+    void Client::connectToServer() {
+        // if client is already connected to server, throw exeption
+        if (_connected) {
+            throw std::runtime_error("client is already connected");
+        }
+        connect();
+
+        _connected = true;
     }
     void Client::disconnectFromServer() {
         this->disconnect();
@@ -39,12 +59,19 @@ namespace MyClient {
         // TODO
     }
 
+    void Client::setUp(ip::tcp::endpoint ep) {
+        this->setEndpoint(ep);
+        try {
+            this->connectToServer();
+        } catch(...) {
+            std::cout << "connection error" << std::endl;
+        }
+    }
+
     //===============================//
 
     void Client::setEndpoint(const ip::tcp::endpoint & ep) {
         _ep = ep;
-        _port = ep.port();
-        _address = ep.address();
     }
 
     void Client::connect() {

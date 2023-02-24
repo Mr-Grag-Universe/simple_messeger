@@ -144,6 +144,7 @@ namespace MyServer {
         
         // нужно придумать id
         _sessions[_sessions.size()] = {_sessions.size(), th, sock};
+        std::cout << "new connection" << std::endl;
     }
 
     void Server::sessionHandler(socket_ptr sock) {

@@ -15,32 +15,54 @@
 
 namespace MyClient {
     using namespace boost::asio;
-//    /**
-//     * some information for creation a connection with a server
-//     */
-//    struct ConnectionInfo {
-//        std::string s_ip;
-//    };
-//
-//    /**
-//     * Client class interface
-//     * main functions :
-//     * 1) connect to server
-//     * 2) creating a session ???
-//     * 3) authorisation ???
-//     * 4) letting to use messenger for forming requests to server
-//     * 5) receiving server responses and another messages
-//     */
-//    class ClientI {
-//        virtual bool connectToServer(const ConnectionInfo & c_inf) = 0;
-//    };
 
-//    class Client : public ClientI {
-//    private:
-//        std::unique_ptr<MessengerI> _messenger = nullptr;
-//    public:
-//        bool connectToServer(const ConnectionInfo & c_inf) override {return true;}
-//    };
+    class Client : public ClientI {
+    private:
+        socket_ptr _sock;
+        io_service_ptr _service;
+
+        ip::tcp::endpoint _ep;
+
+        bool _connected = false;
+
+        // maybe i could invent something better?
+        std::unique_ptr<MessengerI> _messenger = nullptr;
+        std::stringstream _message_stream;
+    public:
+        Client(io_service_ptr service) : _service(service), _sock(new ip::tcp::socket(*service)) {
+            std::cout << "constructor" << std::endl;
+        }
+        ~Client() { this->disconnect(); }
+
+        // =========== interface service ============//
+
+        void Delete() override;
+        void Activate(bool activate) override;
+
+        friend ClientI * ClientI::CreateInstance(io_service_ptr service);
+
+        // =========== interface functions =========== //
+
+        void setUp(ip::tcp::endpoint ep) override;
+        void connectToServer() override;
+        void disconnectFromServer() override;
+
+        MessengerI & messenger() override;
+
+        void pushStream() override;
+        void pullStream() override;
+    private:
+
+        void setEndpoint(const ip::tcp::endpoint & ep);
+
+        void connect();
+        void disconnect();
+
+        size_t request(const std::string & target);
+        std::string getResponse();
+
+    };
+
 };
 
 #endif //SIMPLE_MESSEGER_CLIENT_H

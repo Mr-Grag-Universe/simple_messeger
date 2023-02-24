@@ -12,11 +12,12 @@
 
 #include <boost/asio.hpp>
 
+using namespace boost::asio;
+using socket_ptr = std::shared_ptr<ip::tcp::socket>;
+using io_service_ptr = std::shared_ptr<io_service>;
+
 //#include "../src/Client.h"
 namespace MyClient {
-    using namespace boost::asio;
-    typedef boost::shared_ptr<ip::tcp::socket> socket_ptr;
-    typedef boost::shared_ptr<io_service> io_service_ptr;
 
     /**
      * some information for creation a connection with a server
@@ -28,6 +29,9 @@ namespace MyClient {
 
     class MessengerI;
     class MessageI;
+
+    // ============== interfaces =============== //
+
     /**
      * Client class interface
      * main functions :
@@ -38,8 +42,23 @@ namespace MyClient {
      * 5) receiving server responses and another messages
      */
     class ClientI {
+    protected:
+        ~ClientI() = default;
+    public:
+
+        // ======= interface servise functions ====== //
+    
+        virtual void Delete() = 0;
+        virtual void Activate(bool activate) = 0;
+        
+        static ClientI * CreateInstance(io_service_ptr service);
+        ClientI& operator=(const ClientI&) = delete;
+
+        // ================== //
+
+        virtual void setUp(ip::tcp::endpoint ep) = 0;
         /// connect to server using information from passed info
-        virtual bool connectToServer(const ConnectionInfo &c_inf) = 0;
+        virtual void connectToServer() = 0;
         /// break connection to the server
         virtual void disconnectFromServer() = 0;
 
@@ -47,44 +66,9 @@ namespace MyClient {
         virtual MessengerI & messenger() = 0;
 
         /// push all requests to server
-        virtual void pushStream();
+        virtual void pushStream() = 0;
         /// pull all messages from server
-        virtual void pullStream();
-    };
-
-    class Client : public ClientI {
-    private:
-        socket_ptr _sock;
-        io_service_ptr service;
-
-        size_t _port{};
-        ip::address _address;
-        ip::tcp::endpoint _ep;
-
-        // maybe i could invent something better?
-        std::unique_ptr<MessengerI> _messenger = nullptr;
-        std::stringstream _message_stream;
-    public:
-        explicit Client(socket_ptr sock) : _sock(std::move(sock)) {}
-        ~Client() { this->disconnect(); }
-
-        bool connectToServer(const ConnectionInfo & c_inf) override;
-        void disconnectFromServer() override;
-
-        MessengerI & messenger() override;
-
-        void pushStream() override;
-        void pullStream() override;
-    private:
-
-        void setEndpoint(const ip::tcp::endpoint & ep);
-
-        void connect();
-        void disconnect();
-
-        size_t request(const std::string & target);
-        std::string getResponse();
-
+        virtual void pullStream() = 0;
     };
 
     /**
@@ -116,6 +100,29 @@ namespace MyClient {
         // send?
         virtual void pushMessage(const std::shared_ptr<MessageI> & message) = 0;
     };
+
+    
+    //============== deleters =============//
+
+    struct Client_Deleter {
+        void operator()(ClientI* p) const { p->Delete(); }
+    };
+
+    //============== pointers and templates =================//
+
+    template <class I> // I — ClientI's heir
+    using UniquePtr_Client = std::unique_ptr<I, Client_Deleter>;
+    template <class I> // I — has a fabric-function CreateInstance()
+    UniquePtr_Client<I> CreateInstance(io_service_ptr service) {
+        return UniquePtr_Client<I>(I::CreateInstance(service));
+    }
+    template <class I> // I — ClientI's heir
+    UniquePtr_Client<I> ToPtr(I* p) {
+        return UniquePtr_Client<I>(p);
+    }
+
+    //=======================================================//
+
 
 }
 
