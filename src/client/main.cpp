@@ -13,6 +13,14 @@ using namespace boost::asio;
 
 int main(int argc, char** argv)
 {
+
+    // io_service s;
+    // ip::tcp::endpoint ep( ip::address::from_string("127.0.0.1"), 2000);
+    // ip::tcp::socket sock(s);
+    // sock.connect(ep);
+
+    // std::cout << "tyr\n";
+
     QApplication app(argc, argv);
 
     QPushButton button("Hello world !");
@@ -27,7 +35,12 @@ int main(int argc, char** argv)
     client->setUp(ip::tcp::endpoint(ip::address::from_string("127.0.0.1"), 2000));
     client->Activate(true);
     std::cout << "client created" << std::endl;
-    std::this_thread::sleep_for(10s);
+    
+    while (true) {
+        std::this_thread::sleep_for(1s);
+        std::cout << "hi" << std::endl;
+        client->connectToServer();
+    }
 
-    return app.exec();
+    return 0;
 }

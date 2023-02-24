@@ -32,7 +32,7 @@ namespace MyClient {
         if (_connected) {
             throw std::runtime_error("client is already connected");
         }
-        connect();
+        this->connect();
 
         _connected = true;
     }
@@ -75,12 +75,28 @@ namespace MyClient {
     }
 
     void Client::connect() {
+        std::cout << "try to connect to " << _ep.address() << std::endl;
+        boost::system::error_code ec;
         try {
-            _sock->connect(_ep);
+            _sock->connect(_ep, ec);
         } catch (...) {
             std::cerr << "connection error" << std::endl;
             return;
         }
+
+        if(!ec) {
+            std::cerr << "successful connection" << std::endl;
+        }
+        else {
+            std::cerr << ec.message() << std::endl;
+        }
+        
+        write(*_sock, buffer("hihihi", 6));
+        char data[10];
+        size_t len = _sock->read_some(buffer(data));
+        if ( len > 0)
+            std::cout << data << std::endl;
+
     }
 
     void Client::disconnect() {

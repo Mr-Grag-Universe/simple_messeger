@@ -126,6 +126,8 @@ namespace MyServer {
 
     void Server::Activate(bool activate) {
         _acc = std::make_shared<ip::tcp::acceptor>(_service, _ep);
+        std::cout << _acc->is_open() << "\n";
+        std::cout << "acceptor on the " << _ep.address() << ":" << _ep.port() << " has been opened" << std::endl;
     }
 
     ServerI * ServerI::CreateInstance(io_service & service) {
@@ -135,9 +137,19 @@ namespace MyServer {
     // =============== //
 
     void Server::waitForConnection() {
+        std::cout << "now we keep carring about " << _sessions.size() << " connections" << std::endl;
         // listening to a new connections
         socket_ptr sock(new ip::tcp::socket(_service));
-        _acc->accept(*sock);
+        boost::system::error_code ec;
+        _acc->accept(*sock, ec);
+        if(!ec) {
+            std::cerr << "successful connection" << std::endl;
+        }
+        else {
+            std::cerr << ec.message() << std::endl;
+        }
+
+        std::cout << "new connection has been accepted" << std::endl;
 
         // create a new thread for new client session
         thread_ptr th = std::make_shared<std::thread>( std::bind(sessionHandler, sock));
@@ -148,7 +160,14 @@ namespace MyServer {
     }
 
     void Server::sessionHandler(socket_ptr sock) {
+        std::cout << "hi new thread" << std::endl;
         while (true) {
+            char data[512];
+            size_t len = sock->read_some(buffer(data));
+            if ( len > 0) 
+                write(*sock, buffer("ok", 2));
+            std::cout << data << std::endl;
+
             std::this_thread::sleep_for(1s);
             std::cout << "some work" << std::endl;
         }
