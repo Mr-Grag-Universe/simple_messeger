@@ -9,9 +9,10 @@
 #include <iostream>
 #include <memory>
 
-#include "../include/client.h"
-
 #include <boost/asio.hpp>
+
+#include "../include/client.h"
+#include "Messenger.h"
 
 namespace MyClient {
     using namespace boost::asio;
@@ -26,11 +27,17 @@ namespace MyClient {
         bool _connected = false;
 
         // maybe i could invent something better?
-        std::unique_ptr<MessengerI> _messenger = nullptr;
+        std::unique_ptr<MessengerI> _messenger;
         std::stringstream _message_stream;
     public:
-        Client(io_service_ptr service) : _service(service), _sock(new ip::tcp::socket(*service)) {
+        Client(io_service_ptr service) :
+            _service(service),
+            _sock(new ip::tcp::socket(*service)),
+            _messenger(dynamic_cast<MessengerI *>(new Messenger(_message_stream)))
+        {
+
             std::cout << "constructor" << std::endl;
+            // _messenger = std::move();
         }
         ~Client() { this->disconnect(); }
 

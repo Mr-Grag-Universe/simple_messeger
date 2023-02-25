@@ -8,6 +8,9 @@
 #include "Message.h"
 
 namespace MyClient {
+
+    
+
 } // MyClient
 
 #endif // MESSAGE_CLASS_HEADER

@@ -16,6 +16,8 @@ namespace MyClient {
     private:
         size_t _id{};
 
+    public:
+
     };
 
 } // MyClient

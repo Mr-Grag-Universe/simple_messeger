@@ -29,6 +29,7 @@ namespace MyClient {
 
     class MessengerI;
     class MessageI;
+    class ChatI;
 
     // ============== interfaces =============== //
 
@@ -86,6 +87,7 @@ namespace MyClient {
         virtual void addChat() = 0;
         virtual void getContact() = 0;
         virtual void getChat() = 0;
+        virtual std::unordered_map<size_t, std::shared_ptr<ChatI>> & getChats() = 0;
     };
     class MessageI {
     public:
@@ -113,12 +115,23 @@ namespace MyClient {
     template <class I> // I — ClientI's heir
     using UniquePtr_Client = std::unique_ptr<I, Client_Deleter>;
     template <class I> // I — has a fabric-function CreateInstance()
-    UniquePtr_Client<I> CreateInstance(io_service_ptr service) {
+    UniquePtr_Client<I> CreateInstanceU(io_service_ptr service) {
         return UniquePtr_Client<I>(I::CreateInstance(service));
     }
     template <class I> // I — ClientI's heir
-    UniquePtr_Client<I> ToPtr(I* p) {
+    UniquePtr_Client<I> ToPtrU(I* p) {
         return UniquePtr_Client<I>(p);
+    }
+
+    template <class I> // I — ClientI's heir
+    using SharedPtr_Client = std::shared_ptr<I>;
+    template <class I> // I — has a fabric-function CreateInstance()
+    SharedPtr_Client<I> CreateInstanceS(io_service_ptr service) {
+        return SharedPtr_Client<I>(I::CreateInstance(service), Client_Deleter());
+    }
+    template <class I> // I — ClientI's heir
+    SharedPtr_Client<I> ToPtrS(I* p) {
+        return SharedPtr_Client<I>(p, Client_Deleter());
     }
 
     //=======================================================//
@@ -126,8 +139,6 @@ namespace MyClient {
 
 }
 
-#include "../src/Chat.h"
 #include "../src/Contact.h"
-#include "../src/Messenger.h"
 
 #endif //SIMPLE_MESSEGER_CLIENTI_H

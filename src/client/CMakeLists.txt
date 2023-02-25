@@ -43,6 +43,11 @@ include_directories(../include)
 include_directories(SYSTEM ${Boost_INCLUDE_DIRS} "C:/boost_1_81_0")
 
 add_subdirectory(client_lib)
+add_subdirectory(qt_gui_lib)
 
 add_executable(${PROJECT_NAME} main.cpp)
-target_link_libraries(${PROJECT_NAME} PUBLIC MyClientLib Qt5::Widgets Qt5::Core Qt5::Gui ${Boost_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} PUBLIC
+            MyClientLib MyClientGUI_Lib
+            Qt5::Widgets Qt5::Core Qt5::Gui
+            ${Boost_LIBRARIES}
+            )

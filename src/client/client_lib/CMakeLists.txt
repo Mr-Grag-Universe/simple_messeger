@@ -11,6 +11,7 @@ set(NAME MyClientLib)
 set(SOURCE_FILES
         src/Client.cpp
         src/TextMessage.cpp
+        src/Messenger.cpp
         src/Chat.cpp)
 
 set(HEADER_FILES
