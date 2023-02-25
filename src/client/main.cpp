@@ -36,11 +36,11 @@ int main(int argc, char** argv)
     client->Activate(true);
     std::cout << "client created" << std::endl;
     
-    while (true) {
-        std::this_thread::sleep_for(1s);
-        std::cout << "hi" << std::endl;
-        client->connectToServer();
-    }
+    // while (true) {
+    //     std::this_thread::sleep_for(1s);
+    //     // std::cout << "hi" << std::endl;
+    //     // client->connectToServer();
+    // }
 
-    return 0;
+    return app.exec();
 }
