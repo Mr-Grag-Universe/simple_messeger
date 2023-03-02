@@ -30,6 +30,7 @@ namespace MyClient {
     class MessengerI;
     class MessageI;
     class ChatI;
+    class ContactI;
 
     // ============== interfaces =============== //
 
@@ -70,6 +71,9 @@ namespace MyClient {
         virtual void pushStream() = 0;
         /// pull all messages from server
         virtual void pullStream() = 0;
+
+        /// function of authentication in the app
+        virtual bool authenticate(const std::string& username, const std::string& password) = 0;
     };
 
     /**
@@ -81,8 +85,16 @@ namespace MyClient {
      */
     class MessengerI {
     public:
-        virtual void findContact() = 0;
-        virtual void findChat() = 0;
+        /// @brief : tries to find contact from yours, which are most correspond to your request
+        /// @param some_info - text line, that would be analised to find contact
+        /// @return massive of contacts ordered by their corresponding to your request
+        virtual std::vector<std::shared_ptr<ContactI>> findContact(const std::string & some_info) = 0;
+
+        /// @brief : tries to find chat from yours, which are most correspond to your request
+        /// @param some_info  - text line, that would be analised to find chat
+        /// @return massive of chats ordered by their corresponding to your request
+        virtual std::vector<std::shared_ptr<ChatI>> findChat(const std::string & some_info) = 0;
+
         virtual void addContact() = 0;
         virtual void addChat() = 0;
         virtual void getContact() = 0;
@@ -136,9 +148,7 @@ namespace MyClient {
 
     //=======================================================//
 
-
+    
 }
-
-#include "../src/Contact.h"
 
 #endif //SIMPLE_MESSEGER_CLIENTI_H

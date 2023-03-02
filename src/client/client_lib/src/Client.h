@@ -58,6 +58,8 @@ namespace MyClient {
 
         void pushStream() override;
         void pullStream() override;
+
+        bool authenticate(const std::string& username, const std::string& password) override;
     private:
 
         void setEndpoint(const ip::tcp::endpoint & ep);

@@ -11,6 +11,7 @@ namespace MyClientGUI {
     // ============ help structures =========== //
 
     enum WindowMode {
+        AUTH,
         LIST_OF_CHATS,
         INSIDE_CHAT,
         SETTINGS,
@@ -18,6 +19,15 @@ namespace MyClientGUI {
 
     // ============== interfaces =========== //
 
+    /**
+     * @brief : class of main client's window
+     *          has several modes of working (template decision)
+     *          1. main page - list of all chats
+     *          2. inside chat - here you can see messages
+     *          3. settings - here there are some tools to edit client
+     *             visual parameters
+     * 
+     */
     class WindowI : public QMainWindow {
     protected:
         ~WindowI() = default;
@@ -33,9 +43,15 @@ namespace MyClientGUI {
 
         // =========== interface functions =========== //
 
+        /// @brief : connect some client logic class to window to know,
+        ///          how to edit this in case user interraction
+        /// @param client - pointer to client interface
         virtual void setClient(MyClient::SharedPtr_Client<MyClient::ClientI> client) = 0;
-        virtual void updateCondition(WindowMode mode = LIST_OF_CHATS) = 0;
         
+        /// @brief : clear all QWidgets from window and construct them newly
+        /// @param mode - the mode in which this construction would be processed
+        virtual void updateCondition(WindowMode mode = LIST_OF_CHATS) = 0;
+
     };
 
     //============== deleters =============//

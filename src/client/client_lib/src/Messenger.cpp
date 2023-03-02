@@ -4,12 +4,14 @@
 
 using namespace MyClient;
 
-void Messenger::findContact() {
-    
+std::vector<std::shared_ptr<ContactI>> Messenger::findContact(const std::string & some_info) {
+    return {};
 }
-void Messenger::findChat() {
-    
+
+std::vector<std::shared_ptr<ChatI>> Messenger::findChat(const std::string & some_info) {
+    return {};
 }
+
 void Messenger::addContact() {
     
 }

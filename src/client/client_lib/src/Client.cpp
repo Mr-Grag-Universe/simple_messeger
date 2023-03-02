@@ -34,6 +34,13 @@ namespace MyClient {
         }
         this->connect();
 
+        if (this->authenticate("username", "password")) {
+            _connected = true;
+        }
+        else {
+            this->disconnect();
+        }
+
         _connected = true;
     }
     void Client::disconnectFromServer() {
@@ -63,8 +70,31 @@ namespace MyClient {
         this->setEndpoint(ep);
         try {
             this->connectToServer();
-        } catch(...) {
-            std::cout << "connection error" << std::endl;
+        } catch(const std::exception& e) {
+            std::cerr << "connection error: " << e.what() << std::endl;
+        }
+    }
+
+    bool Client::authenticate(const std::string& username, const std::string& password) {
+        std::string auth_message = "AUTH " + username + " " + password + "\n";
+        size_t bytes_sent = write(*_sock, buffer(auth_message));
+        if (bytes_sent != auth_message.length()) {
+            std::cerr << "Error sending auth message" << std::endl;
+            return false;
+        }
+
+        char response[256];
+        size_t bytes_received = read(*_sock, buffer(response, 256));
+        std::string response_str(response, bytes_received);
+        response_str.erase(std::remove(response_str.begin(), response_str.end(), '\n'), response_str.end());
+
+        if (response_str == "AUTH OK") {
+            std::cout << "Authentication successful" << std::endl;
+            return true;
+        }
+        else {
+            std::cerr << "Authentication failed: " << response_str << std::endl;
+            return false;
         }
     }
 
@@ -115,12 +145,11 @@ namespace MyClient {
         return _sock->write_some(buffer(payload));
     }
     std::string Client::getResponse() {
-        // char * buff = new char[buff_size];
-        std::string buff;
-        size_t read = _sock->read_some(buffer(buff));
-        std::string response = std::string(buff).substr(0, read);
-//        this->disconnect();
-//        this->connect();
+        size_t buff_size = 100;
+        std::string response;
+        response.resize(buff_size);
+        size_t read = _sock->read_some(buffer(response));
+        response.resize(read);
         return response;
     }
 } // MyClient

@@ -7,6 +7,7 @@
 
 #include "../include/client.h"
 #include "Chat.h"
+#include "Contact.h"
 
 namespace MyClient {
 
@@ -19,12 +20,14 @@ namespace MyClient {
             _chats[0] = std::shared_ptr<ChatI>(new Chat());
         }
 
-        void findContact() override;
-        void findChat() override;
+        std::vector<std::shared_ptr<ContactI>> findContact(const std::string & some_info) override;
+        std::vector<std::shared_ptr<ChatI>> findChat(const std::string & some_info) override;
         void addContact() override;
         void addChat() override;
         void getContact() override;
         void getChat() override;
+
+        // ============ getters ========== //
         std::unordered_map<size_t, std::shared_ptr<ChatI>> & getChats() override;
     };
 

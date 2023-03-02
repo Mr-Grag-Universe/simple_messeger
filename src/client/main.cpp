@@ -33,7 +33,7 @@ int main(int argc, char** argv) {
     client->setUp(ip::tcp::endpoint(ip::address::from_string("127.0.0.1"), 2000));
     client->Activate(true);
     
-    window->updateCondition();
+    window->updateCondition(MyClientGUI::AUTH);
 
     return app.exec();
 }
